@@ -7,15 +7,8 @@ export type User = {
   avatarUrl?: string;
 };
 
-export type Store = {
-  id: string;
-  name: string;
-  address: string;
-};
-
 export type AuthState = {
   user: User | null;
-  store: Store | null;
   isAuthenticated: boolean;
 };
 

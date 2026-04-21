@@ -10,7 +10,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export function Header() {
-  const { user, store, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -33,7 +33,7 @@ export function Header() {
     };
   }, []);
 
-  if (!user || !store) return null;
+  if (!user) return null;
 
   const timeString = currentTime.toLocaleTimeString("es-CO", {
     hour: "2-digit",
@@ -52,12 +52,6 @@ export function Header() {
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
           <span className="text-sm">🍽️</span>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-text-primary leading-tight">
-            {store.name}
-          </p>
-          <p className="text-xs text-text-muted leading-tight">{store.address}</p>
         </div>
       </div>
 

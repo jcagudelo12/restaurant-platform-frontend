@@ -3,11 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { Button, Spinner } from "@restaurant/ui";
 
 export function LoginScreen() {
-  const { stores, loginWithCredentials } = useAuth();
+  const { loginWithCredentials } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedStore, setSelectedStore] = useState(stores[0]?.id ?? "");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +28,7 @@ export function LoginScreen() {
     // Simula delay de red
     await new Promise((r) => setTimeout(r, 800));
 
-    const result = loginWithCredentials(email, password, selectedStore);
+    const result = loginWithCredentials(email, password);
     if (!result.success) {
       setError(result.error ?? "Error al iniciar sesión");
     }
@@ -50,7 +49,7 @@ export function LoginScreen() {
 
         <div className="p-8">
           {/* Selector de sucursal */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <label className="block text-sm font-medium text-text-secondary mb-1.5">
               Sucursal
             </label>
@@ -65,7 +64,7 @@ export function LoginScreen() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-4">
