@@ -1,15 +1,47 @@
 import { useState } from "react";
 import { PosLayout } from "../components/PosLayout";
 import { TablesScreen } from "./TablesScreen";
+import { OrderScreen } from "./OrderScreen";
+import { OrderProvider } from "../context/OrderContext";
 import { Badge } from "@restaurant/ui";
 
-export function PosScreen() {
-  const [activeSection, setActiveSection] = useState("tables");
+type ActiveView =
+  | { screen: "section"; section: string }
+  | { screen: "order"; tableId: string; tableNumber: number };
 
-  const renderSection = () => {
-    switch (activeSection) {
+export function PosScreen() {
+  const [view, setView] = useState<ActiveView>({ screen: "section", section: "tables" });
+
+  const handleOpenOrder = (tableId: string, tableNumber: number) => {
+    setView({ screen: "order", tableId, tableNumber });
+  };
+
+  const handleBackToTables = () => {
+    setView({ screen: "section", section: "tables" });
+  };
+
+  const activeSection = view.screen === "section" ? view.section : "tables";
+
+  const handleSectionChange = (section: string) => {
+    setView({ screen: "section", section });
+  };
+
+  const renderContent = () => {
+    if (view.screen === "order") {
+      return (
+        <OrderProvider>
+          <OrderScreen
+            tableId={view.tableId}
+            tableNumber={view.tableNumber}
+            onBack={handleBackToTables}
+          />
+        </OrderProvider>
+      );
+    }
+
+    switch (view.section) {
       case "tables":
-        return <TablesScreen />;
+        return <TablesScreen onOpenOrder={handleOpenOrder} />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full gap-4">
@@ -17,10 +49,10 @@ export function PosScreen() {
               Sección activa
             </Badge>
             <h2 className="text-2xl font-bold text-text-primary capitalize">
-              {activeSection.replace("-", " ")}
+              {view.section.replace("-", " ")}
             </h2>
             <p className="text-text-muted text-center max-w-md">
-              Próximamente: semana 4 — pantalla de pedidos
+              Próximamente
             </p>
           </div>
         );
@@ -28,8 +60,8 @@ export function PosScreen() {
   };
 
   return (
-    <PosLayout activeSection={activeSection} onSectionChange={setActiveSection}>
-      {renderSection()}
+    <PosLayout activeSection={activeSection} onSectionChange={handleSectionChange}>
+      {renderContent()}
     </PosLayout>
   );
 }

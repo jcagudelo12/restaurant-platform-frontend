@@ -15,13 +15,16 @@ const STATUS_FILTERS: { value: TableStatus | "all"; label: string; icon: string 
   { value: "dirty", label: "Sucias", icon: "⚫" },
 ];
 
-export function TablesScreen() {
+type TablesScreenProps = {
+  onOpenOrder: (tableId: string, tableNumber: number) => void;
+};
+
+export function TablesScreen({ onOpenOrder }: TablesScreenProps) {
   const { floors, tables } = useTables();
   const [activeFloor, setActiveFloor] = useState("all");
   const [statusFilter, setStatusFilter] = useState<TableStatus | "all">("all");
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
-  // Conteos por zona
   const tableCounts = useMemo(() => {
     const counts: Record<string, { total: number; free: number }> = {};
     for (const floor of floors) {
@@ -34,7 +37,6 @@ export function TablesScreen() {
     return counts;
   }, [floors, tables]);
 
-  // Estadísticas globales
   const stats = useMemo(() => {
     const total = tables.length;
     const free = tables.filter((t) => t.status === "free").length;
@@ -44,7 +46,6 @@ export function TablesScreen() {
     return { total, free, occupied, billRequested, revenue };
   }, [tables]);
 
-  // Filtrar mesas
   const filteredTables = useMemo(() => {
     let result = tables;
     if (activeFloor !== "all") {
@@ -65,7 +66,6 @@ export function TablesScreen() {
 
   return (
     <div className="space-y-4 h-full flex flex-col">
-      {/* Stats rápidas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-surface rounded-lg border border-border p-3">
           <p className="text-xs text-text-muted">Libres</p>
@@ -85,7 +85,6 @@ export function TablesScreen() {
         </div>
       </div>
 
-      {/* Selector de zona */}
       <FloorSelector
         floors={floors}
         activeFloor={activeFloor}
@@ -93,7 +92,6 @@ export function TablesScreen() {
         tableCounts={tableCounts}
       />
 
-      {/* Filtro por estado */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {STATUS_FILTERS.map((filter) => {
           const isActive = statusFilter === filter.value;
@@ -113,7 +111,7 @@ export function TablesScreen() {
             >
               <span>{filter.icon}</span>
               <span>{filter.label}</span>
-              <Badge size="sm" variant={isActive ? "default" : "default"}>
+              <Badge size="sm" variant="default">
                 {count}
               </Badge>
             </button>
@@ -121,16 +119,15 @@ export function TablesScreen() {
         })}
       </div>
 
-      {/* Mapa de mesas */}
       <div className="flex-1 overflow-auto">
         <FloorMap tables={filteredTables} onTableClick={setSelectedTable} />
       </div>
 
-      {/* Modal de detalle */}
       <TableDetail
         table={selectedTable}
         isOpen={selectedTable !== null}
         onClose={() => setSelectedTable(null)}
+        onOpenOrder={onOpenOrder}
       />
     </div>
   );

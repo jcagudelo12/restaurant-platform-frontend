@@ -8,6 +8,7 @@ type TableDetailProps = {
   table: Table | null;
   isOpen: boolean;
   onClose: () => void;
+  onOpenOrder: (tableId: string, tableNumber: number) => void;
 };
 
 function formatCurrency(amount: number): string {
@@ -35,7 +36,7 @@ const STATUS_BADGES: Record<string, { variant: "success" | "info" | "warning" | 
   dirty: { variant: "default", label: "Sucia" },
 };
 
-export function TableDetail({ table, isOpen, onClose }: TableDetailProps) {
+export function TableDetail({ table, isOpen, onClose, onOpenOrder }: TableDetailProps) {
   const { user } = useAuth();
   const { seatTable, freeTable, updateTableStatus } = useTables();
   const [guests, setGuests] = useState(2);
@@ -47,6 +48,12 @@ export function TableDetail({ table, isOpen, onClose }: TableDetailProps) {
   const handleSeat = () => {
     seatTable(table.id, guests, user?.name ?? "Sin asignar");
     onClose();
+  };
+
+  const handleSeatAndOrder = () => {
+    seatTable(table.id, guests, user?.name ?? "Sin asignar");
+    onClose();
+    onOpenOrder(table.id, table.number);
   };
 
   const handleFree = () => {
@@ -69,16 +76,19 @@ export function TableDetail({ table, isOpen, onClose }: TableDetailProps) {
     onClose();
   };
 
+  const handleOpenOrder = () => {
+    onClose();
+    onOpenOrder(table.id, table.number);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Mesa ${table.number}`} size="sm">
       <div className="space-y-4">
-        {/* Estado y capacidad */}
         <div className="flex items-center justify-between">
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
           <span className="text-sm text-text-muted">🪑 {table.capacity} personas</span>
         </div>
 
-        {/* Info de mesa ocupada */}
         {(table.status === "occupied" || table.status === "bill_requested") && (
           <div className="bg-surface-secondary rounded-lg p-3 space-y-2">
             {table.waiterName && (
@@ -108,14 +118,12 @@ export function TableDetail({ table, isOpen, onClose }: TableDetailProps) {
           </div>
         )}
 
-        {/* Info de reserva */}
         {table.status === "reserved" && table.reservedFor && (
           <div className="bg-surface-secondary rounded-lg p-3">
             <p className="text-sm text-text-secondary">📅 {table.reservedFor}</p>
           </div>
         )}
 
-        {/* Selector de comensales (solo si está libre) */}
         {table.status === "free" && (
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-2">
@@ -145,17 +153,16 @@ export function TableDetail({ table, isOpen, onClose }: TableDetailProps) {
           </div>
         )}
 
-        {/* Acciones según estado */}
         <div className="flex flex-col gap-2 pt-2">
           {table.status === "free" && (
-            <Button variant="primary" fullWidth onClick={handleSeat}>
-              🪑 Sentar {guests} {guests === 1 ? "persona" : "personas"}
+            <Button variant="primary" fullWidth onClick={handleSeatAndOrder}>
+              📋 Tomar pedido ({guests} {guests === 1 ? "persona" : "personas"})
             </Button>
           )}
 
           {table.status === "occupied" && (
             <>
-              <Button variant="primary" fullWidth onClick={() => { /* TODO: ir a pedido */ onClose(); }}>
+              <Button variant="primary" fullWidth onClick={handleOpenOrder}>
                 📋 Tomar pedido
               </Button>
               <Button variant="secondary" fullWidth onClick={handleRequestBill}>
@@ -169,7 +176,7 @@ export function TableDetail({ table, isOpen, onClose }: TableDetailProps) {
 
           {table.status === "bill_requested" && (
             <>
-              <Button variant="success" fullWidth onClick={() => { /* TODO: ir a cobro */ onClose(); }}>
+              <Button variant="success" fullWidth onClick={handleOpenOrder}>
                 💳 Cobrar
               </Button>
               <Button variant="danger" fullWidth onClick={handleMarkDirty}>
